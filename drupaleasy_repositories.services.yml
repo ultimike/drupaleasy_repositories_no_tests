@@ -1,0 +1,22 @@
+parameters:
+  drupaleasy_repositories.dry_run: false
+
+services:
+  plugin.manager.drupaleasy_repositories:
+    class: Drupal\drupaleasy_repositories\DrupaleasyRepositories\DrupaleasyRepositoriesPluginManager
+    parent: default_plugin_manager
+
+  drupaleasy_repositories.service:
+    class: Drupal\drupaleasy_repositories\DrupaleasyRepositoriesService
+    arguments: ['@plugin.manager.drupaleasy_repositories', '@config.factory', '@entity_type.manager', '@queue', '@event_dispatcher', '@cache.data', '@datetime.time', '%drupaleasy_repositories.dry_run%']
+
+  drupaleasy_repositories.batch:
+    class: Drupal\drupaleasy_repositories\DrupaleasyRepositoriesBatch
+    arguments: ['@drupaleasy_repositories.service', '@entity_type.manager', '@extension.list.module']
+
+  drupaleasy_repositories.uninstall_validator:
+    class: Drupal\drupaleasy_repositories\DrupaleasyRepositoriesUninstallValidator
+    tags:
+      - { name: module_install.uninstall_validator }
+    arguments: ['@entity_type.manager']
+    lazy: true
