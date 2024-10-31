@@ -30,7 +30,7 @@ final class YmlRemote extends DrupaleasyRepositoriesPluginBase {
    * {@inheritdoc}
    */
   public function validateHelpText(): string {
-    return 'http://anything.anything/anything/anything.yml (or https or yaml)';
+    return 'https://anything.anything/anything/anything.yml (or http or yaml)';
   }
 
   /**

@@ -33,13 +33,6 @@ abstract class DrupaleasyRepositoriesPluginBase extends PluginBase implements Dr
   protected MessengerInterface $messenger;
 
   /**
-   * The PRS logger service.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected LoggerInterface $logger;
-
-  /**
    * The Key module's service.
    *
    * @var \Drupal\key\KeyRepositoryInterface
@@ -57,17 +50,14 @@ abstract class DrupaleasyRepositoriesPluginBase extends PluginBase implements Dr
    *   The plugin implementation definition.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The Drupal core messenger service.
-   * @param \Psr\Log\LoggerInterface $logger
-   *   The PRS Logger service.
    * @param \Drupal\key\KeyRepositoryInterface $key_repository
    *   The Key repository service.
    */
-  final public function __construct(array $configuration, string $plugin_id, mixed $plugin_definition, MessengerInterface $messenger, LoggerInterface $logger, KeyRepositoryInterface $key_repository) {
+  final public function __construct(array $configuration, string $plugin_id, mixed $plugin_definition, MessengerInterface $messenger, KeyRepositoryInterface $key_repository) {
     $this->configuration = $configuration;
     $this->pluginId = $plugin_id;
     $this->pluginDefinition = $plugin_definition;
     $this->messenger = $messenger;
-    $this->logger = $logger;
     $this->keyRepository = $key_repository;
   }
 
@@ -80,7 +70,6 @@ abstract class DrupaleasyRepositoriesPluginBase extends PluginBase implements Dr
       $plugin_id,
       $plugin_definition,
       $container->get('messenger'),
-      $container->get('logger.factory')->get('drupaleasy_repositories'),
       $container->get('key.repository')
     );
   }

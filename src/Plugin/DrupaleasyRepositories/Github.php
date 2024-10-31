@@ -53,9 +53,6 @@ final class Github extends DrupaleasyRepositoriesPluginBase {
       $this->messenger->addError($this->t('GitHub error: @error', [
         '@error' => $th->getMessage(),
       ]));
-      $this->logger->error($this->t('GitHub error: @error', [
-        '@error' => $th->getMessage(),
-      ]));
       return [];
     }
 
