@@ -14,7 +14,7 @@ use Github\Client;
  * @DrupaleasyRepositories(
  *   id = "github",
  *   label = @Translation("GitHub"),
- *   description = @Translation("GitHub.com")
+ *   description = @Translation("GitHub.com"),
  * )
  */
 final class Github extends DrupaleasyRepositoriesPluginBase {
@@ -23,7 +23,7 @@ final class Github extends DrupaleasyRepositoriesPluginBase {
    * {@inheritdoc}
    */
   public function validate(string $uri): bool {
-    $pattern = '|^https://github.com/[a-zA-Z0-9_\-]+/[a-zA-Z0-9_\-]+|';
+    $pattern = '|^https://github.com/[a-zA-Z0-9_\-]+/[a-zA-Z0-9_\-]+$|';
     return preg_match($pattern, $uri) === 1;
   }
 
@@ -37,41 +37,55 @@ final class Github extends DrupaleasyRepositoriesPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function getRepo(string $uri): array {
-    // Parse the URI to get the vendor and name of the repository.
+  public function getRepo(string $uri, ?Object $client = NULL): array {
+    // Get the repository vendor and name from the $uri parameter.
     $all_parts = parse_url($uri);
-    $parts = explode('/', $all_parts['path']);
+    $path_parts = explode('/', $all_parts['path']);
 
-    // Set up authentication for Github API.
-    $this->setAuthentication();
+    if ((!$client) || (!$client->isInstanceOf('Github\Client'))) {
+      $client = new Client();
+    }
 
-    // Get the repository metadata from the API.
+    // Set up API authentication.
+    $client = $this->setAuthentication($client);
+
+    // Make the API call to get the repository metadata.
     try {
-      $repo = $this->client->api('repo')->show($parts[1], $parts[2]);
+      // Try this code.
+      /** @var \Github\Api\Repo $repo */
+      $repo = $client->api('repo');
+      $repo_metadata = $repo->show($path_parts[1], $path_parts[2]);
     }
     catch (\Throwable $th) {
-      $this->messenger->addError($this->t('GitHub error: @error', [
+      // If an exception is thrown, then run this code.
+      $this->messenger->addMessage($this->t('GitHub error: @error', [
         '@error' => $th->getMessage(),
       ]));
       return [];
     }
 
-    // Parse and map repository metadata to a common format.
-    return $this->mapToCommonFormat($repo['full_name'], $repo['name'], $repo['description'], $repo['open_issues'], $uri);
+    // Map it to a common format.
+    return $this->mapToCommonFormat(
+      $repo_metadata['full_name'],
+      $repo_metadata['name'],
+      $repo_metadata['description'],
+      $repo_metadata['open_issues_count'],
+      $repo_metadata['html_url']);
   }
 
   /**
-   * Add authetication stuff to GitHub client.
+   * Authenticate with GitHub.
    */
-  protected function setAuthentication(): void {
-    $this->client = new Client();
-
-    $keys = $this->keyRepository->getKey('github')->getKeyValues();
+  protected function setAuthentication(Client $client): Client {
+    // Get access to the credentials from the Key module.
+    $github_key = $this->keyRepository->getKey('github')->getKeyValues();
 
     // The authenticate() method does not actually call the GitHub API,
-    // rather it only stores the authentication info in $client for use when
-    // $client makes an API call that requires authentication.
-    $this->client->authenticate($keys['username'], $keys['personal_access_token'], AuthMethod::CLIENT_ID);
+    // rather it only stores the authentication info in $this->client for use
+    // when $this->client makes an API call that requires authentication.
+    $client->authenticate($github_key['username'], $github_key['personal_access_token'], AuthMethod::CLIENT_ID);
+
+    return $client;
   }
 
 }

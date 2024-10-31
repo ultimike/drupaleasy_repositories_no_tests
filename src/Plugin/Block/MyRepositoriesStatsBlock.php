@@ -103,9 +103,9 @@ final class MyRepositoriesStatsBlock extends BlockBase implements ContainerFacto
   /**
    * {@inheritDoc}
    */
-  public function getCacheContexts() {
-    return ['timezone', 'user'];
-  }
+  // public function getCacheContexts() {
+  //   return ['timezone', 'user'];
+  // }
 
   /**
    * Calculates the total number of issues for a user's repositories.
